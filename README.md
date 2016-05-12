@@ -1,5 +1,7 @@
 # jpnewman.redis
 
+[![Build Status](https://travis-ci.org/jpnewman/ansible-role-redis.svg?branch=master)](https://travis-ci.org/jpnewman/ansible-role-redis)
+
 This is a Ansible role to config
 
 ## Requirements

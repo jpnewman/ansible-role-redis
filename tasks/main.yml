@@ -12,5 +12,56 @@
   template: src=redis.conf.j2 dest=/etc/redis/redis.conf owner=root group=root mode=0644
   notify: restart redis
 
+- name: Set Redis ulimit
+  lineinfile:
+    dest='/etc/default/redis-server'
+    regexp='^\s*#?\s*ULIMIT\s*=.*$'
+    insertafter=EOF
+    line="ULIMIT={{ redis_ulimit }}"
+
+- name: Sysctl vm.swappiness
+  sysctl:
+    name: vm.swappiness
+    value: 0
+    reload: true
+    state: present
+  when: sysctl_vm_swappiness
+
+- name: Sysctl vm.overcommit_memory
+  sysctl:
+    name: vm.overcommit_memory
+    value: 1
+    reload: true
+    state: present
+  when: sysctl_vm_overcommit_memory
+
+- name: Diable transparent_hugepage
+  shell: "echo never > {{ item }}"
+  with_items:
+    - /sys/kernel/mm/transparent_hugepage/enabled
+    - /sys/kernel/mm/transparent_hugepage/defrag
+
+- name: Configure transparent_hugepage
+  lineinfile:
+    dest='/etc/rc.local'
+    regexp="echo never > {{ item }}"
+    insertafter=EOF
+    line="echo never > {{ item }}"
+  with_items:
+    - /sys/kernel/mm/transparent_hugepage/enabled
+    - /sys/kernel/mm/transparent_hugepage/defrag
+
+- name: Configure transparent_hugepage grub
+  lineinfile:
+    dest: /etc/default/grub
+    regexp: "^GRUB_CMDLINE_LINUX_DEFAULT="
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="{{ grub_cmdline_linux_default }}"'
+  register: grub_file
+  tags: grub
+
+- name: Update grub
+  command: sudo update-grub
+  when: grub_file | changed
+
 - name: Flush handlers
   meta: flush_handlers

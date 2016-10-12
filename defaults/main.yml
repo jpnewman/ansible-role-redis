@@ -1,3 +1,12 @@
 redis_bind_ip: 127.0.0.1
 
 apt_cache_valid_time: 600
+
+redis_ulimit: 65536
+
+sysctl_vm_swappiness: true
+sysctl_vm_overcommit_memory: true
+
+redis_transparent_hugepage: true
+
+grub_cmdline_linux_default: console=tty1 console=ttyS0 transparent_hugepage=never
